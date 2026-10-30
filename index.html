@@ -43,88 +43,96 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
         .action-btn:hover { background-color: #00b359; }
+        .gen-btn { background-color: #3399ff; }
+        .gen-btn:hover { background-color: #2080e6; }
+        
         #qrcode { background: #fff; padding: 15px; display: inline-block; border-radius: 8px; margin-top: 15px; }
         hr { border: 0; border-top: 1px solid #333; margin: 20px 0; }
-        textarea { width: 100%; height: 80px; background: #2a2a2a; color: #fff; border: 1px solid #444; border-radius: 5px; padding: 8px; box-sizing: border-box; }
+        textarea { width: 100%; height: 90px; background: #2a2a2a; color: #fff; border: 1px solid #444; border-radius: 5px; padding: 8px; box-sizing: border-box; }
     </style>
 </head>
 <body>
     <h1>D2 Survivors 安全轉移工具</h1>
     <div class="box">
         <p class="warning">⚠️ 更改遊戲會破壞遊戲樂趣，想清楚再改！</p>
-        <p class="tip">💡 隱私保證：所有資料皆在您的本機端運算，透過 QR Code 點對點轉移，絕不外洩！</p>
+        <p class="tip">💡 隱私保證：本機端運算，絕不上傳雲端，資料百分百安全！</p>
         <br>
 
-        <h3>【步驟一：電腦端 - 產生轉移 QR Code】</h3>
+        <h3>【步驟一：電腦端 - 產生 QR Code】</h3>
         <p>1. 將下方黃色按鈕<span class="tip">拖曳到書籤列</span>：</p>
         <div style="text-align: center; margin: 10px 0;">
-            <a class="bookmark-btn" href="javascript:(function(){let rawData=localStorage.getItem('d2-survivors/save/v1');if(!rawData){let saveKey=Object.keys(localStorage).find(k=>localStorage.getItem(k).includes('gold'));if(saveKey)rawData=localStorage.getItem(saveKey);}if(!rawData){alert('❌ 找不到遊戲存檔！');return;}let compressed=btoa(encodeURIComponent(rawData));window.open('https://jtnhrbpvvm-spec.github.io/taiwan_game2/D2%E4%BF%AE%E6%94%B9%E7%89%88/?data='+compressed,'_blank');})();">🔲 生成存檔 QR Code</a>
+            <!-- 點擊後直接把存檔複製到剪貼簿，並開啟工具網頁 -->
+            <a class="bookmark-btn" href="javascript:(function(){let rawData=localStorage.getItem('d2-survivors/save/v1');if(!rawData){let saveKey=Object.keys(localStorage).find(k=>localStorage.getItem(k).includes('gold'));if(saveKey)rawData=localStorage.getItem(saveKey);}if(!rawData){alert('❌ 找不到遊戲存檔！');return;}navigator.clipboard.writeText(rawData);window.open('https://jtnhrbpvvm-spec.github.io/taiwan_game2/D2%E4%BF%AE%E6%94%B9%E7%89%88/','_blank');alert('📋 存檔已複製！已為您開啟轉移工具網頁，請至網頁中貼上產生 QR Code！');})();">🔲 複製存檔並開轉移工具</a>
         </div>
-        <p>2. 在遊戲中點擊該書籤，會自動跳轉並在下方顯示您的專屬 QR Code。</p>
+        <p>2. 點擊書籤後會打開此工具網頁，請將存檔貼在下方框框並點擊「生成 QR Code」：</p>
+
+        <textarea id="rawInput" placeholder="點擊上方書籤後，直接在這裡按 Ctrl + V 貼上存檔..."></textarea>
+        <button class="action-btn gen-btn" onclick="generateQR()">🔄 產生 QR Code</button>
+
+        <div style="text-align: center;" id="qrcode-container">
+            <div id="qrcode"></div>
+            <p id="qr-tip" style="font-size: 13px; color: #aaa; margin-top: 5px;">（尚未產生 QR Code）</p>
+        </div>
 
         <hr>
 
-        <h3>【步驟二：手機端 - 掃描接收存檔】</h3>
-        <p>用手機相機掃描電腦畫面上產生的 QR Code，或者將內容貼在下方寫入：</p>
-        
-        <div style="text-align: center;" id="qrcode-container">
-            <div id="qrcode"></div>
-            <p id="qr-tip" style="font-size: 13px; color: #aaa; margin-top: 5px;">（尚未載入存檔資料）</p>
-        </div>
-
-        <div style="margin-top: 15px;">
-            <textarea id="scanResult" placeholder="或將 QR Code 解析出的文字貼在此處..."></textarea>
-            <button class="action-btn" onclick="importFromText()">📥 一鍵寫入手機遊戲存檔</button>
-        </div>
+        <h3>【步驟二：手機端 - 接收存檔】</h3>
+        <p>用手機相機掃描上方產生的 QR Code（若存檔太大掃不出來，也可以直接用手機開此網頁貼上文字寫入）：</p>
+        <button class="action-btn" onclick="importFromText()">📥 一鍵寫入手機遊戲存檔</button>
     </div>
 
     <script>
-        // 自動檢查網址列是否有帶入壓縮過的存檔資料
-        window.onload = function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const encodedData = urlParams.get('data');
-            
-            if (encodedData) {
-                try {
-                    let rawJson = decodeURIComponent(atob(encodedData));
-                    // 驗證 JSON
-                    JSON.parse(rawJson);
-                    
-                    // 顯示在畫面上供手機掃描
-                    document.getElementById('qr-tip').innerText = "請用手機相機掃描下方 QR Code";
-                    new QRCode(document.getElementById("qrcode"), {
-                        text: encodedData,
-                        width: 220,
-                        height: 220
-                    });
-
-                    // 同時填入下方文字框方便複製
-                    document.getElementById('scanResult').value = encodedData;
-                } catch (e) {
-                    alert('❌ 存檔資料解析失敗！');
-                }
-            } else {
-                document.getElementById('qr-tip').innerText = "請先在電腦遊戲中點擊書籤生成 QR Code";
-            }
-        };
-
-        function importFromText() {
-            let inputVal = document.getElementById('scanResult').value.trim();
-            if (!inputVal) {
-                alert('❌ 請先輸入或掃描存檔資料！');
+        function generateQR() {
+            let text = document.getElementById('rawInput').value.trim();
+            if (!text) {
+                alert('❌ 請先將存檔內容貼在上方框框中！');
                 return;
             }
 
             try {
-                // 解碼 Base64 與 URI
-                let rawJson = decodeURIComponent(atob(inputVal));
-                JSON.parse(rawJson); // 驗證合法性
+                // 驗證是否為合法 JSON
+                JSON.parse(text);
+                
+                // 壓縮成 Base64 縮短長度以利 QR Code 容納
+                let compressed = btoa(encodeURIComponent(text));
 
-                localStorage.setItem('d2-survivors/save/v1', rawJson);
+                // 清空舊的 QR Code
+                document.getElementById('qrcode').innerHTML = "";
+                
+                // 生成新的 QR Code
+                new QRCode(document.getElementById("qrcode"), {
+                    text: compressed,
+                    width: 240,
+                    height: 240
+                });
+
+                document.getElementById('qr-tip').innerText = "✅ QR Code 已成功產生，請用手機相機掃描！";
+            } catch (e) {
+                alert('❌ 格式錯誤，這不是合法的遊戲存檔 JSON！');
+            }
+        }
+
+        function importFromText() {
+            let text = document.getElementById('rawInput').value.trim();
+            if (!text) {
+                alert('❌ 請先輸入存檔內容！');
+                return;
+            }
+
+            try {
+                // 支援直接貼上原始 JSON 或是掃描解碼後的文字
+                let finalJson = text;
+                if (!text.startsWith('{')) {
+                    finalJson = decodeURIComponent(atob(text));
+                }
+
+                JSON.parse(finalJson); // 最終驗證
+
+                localStorage.setItem('d2-survivors/save/v1', finalJson);
                 localStorage.removeItem('d2-survivors/save/v1/unreadable');
                 alert('✨ 手機存檔寫入成功！\n請打開手機遊戲網頁重新整理 (F5) 即可！');
             } catch (e) {
-                alert('❌ 格式錯誤，無法還原存檔！');
+                alert('❌ 存檔格式解析失敗！');
             }
         }
     </script>
