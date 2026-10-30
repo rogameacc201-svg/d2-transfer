@@ -7,8 +7,8 @@
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin-top: 30px; background-color: #121212; color: #fff; padding: 10px; }
         .bookmark-btn { 
-            padding: 15px 30px; 
-            font-size: 18px; 
+            padding: 12px 20px; 
+            font-size: 16px; 
             background-color: #ffcc00; 
             color: #000; 
             border: none; 
@@ -18,6 +18,7 @@
             text-decoration: none; 
             display: inline-block; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            margin: 8px 0;
         }
         .bookmark-btn:active { cursor: grabbing; }
         .bookmark-btn:hover { background-color: #e6b800; }
@@ -29,8 +30,8 @@
         .action-btn { 
             padding: 12px 20px; 
             font-size: 15px; 
-            background-color: #ffcc00; 
-            color: #000; 
+            background-color: #00cc66; 
+            color: #fff; 
             border: none; 
             cursor: pointer; 
             font-weight: bold; 
@@ -40,8 +41,7 @@
             margin: 10px 0;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
-        .action-btn-green { background-color: #00cc66; color: #fff; }
-        .action-btn-green:hover { background-color: #00b359; }
+        .action-btn:hover { background-color: #00b359; }
         textarea { width: 100%; height: 70px; background: #2a2a2a; color: #fff; border: 1px solid #444; border-radius: 5px; padding: 8px; box-sizing: border-box; }
         hr { border: 0; border-top: 1px solid #333; margin: 20px 0; }
     </style>
@@ -50,48 +50,33 @@
     <h1>D2 Survivors 工具箱</h1>
     <div class="box">
         <p class="warning">⚠️ 更改遊戲會破壞遊戲樂趣，想清楚再改！</p>
-        <p class="tip">💡 貼心提醒：更改前需要身上有金幣，並且存檔過一次後才會生效喔！</p>
+        <p class="tip">💡 貼心提醒：改錢前需要身上有金幣，並且存檔過一次後才會生效喔！</p>
         <br>
 
-        <h3>【功能一：一鍵改金幣書籤】</h3>
-        <p>1. 請確保瀏覽器有顯示「書籤列」（<span class="tip">Ctrl + Shift + B</span>）。</p>
-        <p>2. 用滑鼠<span class="tip">按住下方黃色按鈕不放</span>，直接<span class="tip">拖曳到書籤列</span>放開！</p>
+        <h3>【步驟一：電腦端 - 安裝書籤】</h3>
+        <p>把下面這兩個黃色按鈕，<span class="tip">按住不放拖曳到你的瀏覽器書籤列</span>：</p>
+        
         <div style="text-align: center; margin: 15px 0;">
+            <!-- 按鈕 1：改金幣 -->
             <a class="bookmark-btn" href="javascript:(function(){let rawData=localStorage.getItem('d2-survivors/save/v1');if(!rawData){let saveKey=Object.keys(localStorage).find(k=>localStorage.getItem(k).includes('gold'));if(saveKey){rawData=localStorage.getItem(saveKey);let data=JSON.parse(rawData);data.gold=999999;localStorage.setItem(saveKey,JSON.stringify(data));alert('✨ 金幣修改成功！請按 F5 重新整理！');return;}alert('❌ 找不到遊戲存檔，請確認你正在 https://d2survivors.lol 遊戲頁面中！');return;}let data=JSON.parse(rawData);data.gold=999999;localStorage.setItem('d2-survivors/save/v1',JSON.stringify(data));localStorage.removeItem('d2-survivors/save/v1/unreadable');alert('✨ 成功！金幣已改為 999,999，請按 F5 重新整理！');})();">🔥 D2 Survivors 改金幣</a>
+            
+            <br>
+
+            <!-- 按鈕 2：一鍵複製電腦存檔 -->
+            <a class="bookmark-btn" href="javascript:(function(){let rawData=localStorage.getItem('d2-survivors/save/v1');if(!rawData){let saveKey=Object.keys(localStorage).find(k=>localStorage.getItem(k).includes('gold'));if(saveKey)rawData=localStorage.getItem(saveKey);}if(!rawData){alert('❌ 找不到遊戲存檔，請確保你已經進入遊戲並存檔過！');return;}navigator.clipboard.writeText(rawData).then(()=>{alert('📋 電腦存檔已成功複製到剪貼簿！\n請貼到 LINE 傳給手機！');}).catch(()=>{prompt('請手動複製以下存檔碼：',rawData);});})();">📋 一鍵複製電腦存檔</a>
         </div>
 
         <hr>
 
-        <h3>【功能二：電腦 ➔ 手機 存檔轉移】</h3>
-        <p><b>1. 電腦端操作：</b> 在電腦瀏覽器開啟本頁面，點擊下方按鈕複製存檔：</p>
-        <button class="action-btn" onclick="exportSave()">📋 一鍵複製電腦存檔碼</button>
-
-        <p style="margin-top: 15px;"><b>2. 手機端操作：</b> 將複製的字碼用 LINE 傳給手機，貼在下方並寫入：</p>
+        <h3>【步驟二：手機端 - 貼上並匯入存檔】</h3>
+        <p>1. 在電腦遊戲畫面點剛拖過去的 **「📋 一鍵複製電腦存檔」** 書籤，貼到 LINE 傳給手機。</p>
+        <p>2. 用手機打開這個網頁，把存檔碼貼在下方框框，點擊綠色按鈕寫入：</p>
         <textarea id="saveInput" placeholder="請將電腦複製的存檔碼貼在這裡..."></textarea>
-        <button class="action-btn action-btn-green" onclick="importSave()">📥 一鍵寫入手機遊戲存檔</button>
-        <p style="font-size: 13px; color: #aaa;">* 寫入成功後，請開啟手機上的遊戲網頁按重新整理 (F5) 即可！</p>
+        <button class="action-btn" onclick="importSave()">📥 一鍵寫入手機遊戲存檔</button>
+        <p style="font-size: 13px; color: #aaa;">* 寫入成功後，開啟手機上的遊戲網頁按重新整理 (F5) 即可！</p>
     </div>
 
     <script>
-        function exportSave() {
-            let rawData = localStorage.getItem('d2-survivors/save/v1');
-            if (!rawData) {
-                let saveKey = Object.keys(localStorage).find(k => localStorage.getItem(k).includes('gold'));
-                if (saveKey) rawData = localStorage.getItem(saveKey);
-            }
-            
-            if (!rawData) {
-                alert('❌ 在本頁面找不到遊戲存檔！\n請先用此瀏覽器打開過遊戲網頁並遊玩存檔喔！');
-                return;
-            }
-
-            navigator.clipboard.writeText(rawData).then(() => {
-                alert('✅ 電腦存檔已成功複製到剪貼簿！\n請貼到 LINE 傳給手機。');
-            }).catch(() => {
-                prompt("請手動複製以下存檔字串：", rawData);
-            });
-        }
-
         function importSave() {
             let saveStr = document.getElementById('saveInput').value.trim();
             if (!saveStr) {
