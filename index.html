@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D2 Survivors 修改與存檔轉移工具</title>
+    <title>D2 Survivors 安全 QR Code 存檔轉移工具</title>
+    <!-- 引入 QRCode 生成函式庫 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin-top: 30px; background-color: #121212; color: #fff; padding: 10px; }
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 20px; background-color: #121212; color: #fff; padding: 10px; }
         .bookmark-btn { 
             padding: 12px 20px; 
             font-size: 16px; 
@@ -22,8 +24,7 @@
         }
         .bookmark-btn:active { cursor: grabbing; }
         .bookmark-btn:hover { background-color: #e6b800; }
-        .box { background: #1e1e1e; padding: 25px; border-radius: 10px; display: inline-block; max-width: 600px; text-align: left; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        ol { line-height: 1.8; }
+        .box { background: #1e1e1e; padding: 20px; border-radius: 10px; display: inline-block; max-width: 600px; width: 100%; text-align: left; box-shadow: 0 4px 10px rgba(0,0,0,0.5); box-sizing: border-box; }
         .tip { color: #ffcc00; font-weight: bold; }
         .warning { color: #ff4d4d; font-weight: bold; }
         
@@ -42,62 +43,89 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
         .action-btn:hover { background-color: #00b359; }
-        input[type="file"] { background: #2a2a2a; color: #fff; padding: 8px; border-radius: 5px; width: 100%; box-sizing: border-box; margin: 10px 0; }
+        #qrcode { background: #fff; padding: 15px; display: inline-block; border-radius: 8px; margin-top: 15px; }
         hr { border: 0; border-top: 1px solid #333; margin: 20px 0; }
+        textarea { width: 100%; height: 80px; background: #2a2a2a; color: #fff; border: 1px solid #444; border-radius: 5px; padding: 8px; box-sizing: border-box; }
     </style>
 </head>
 <body>
-    <h1>D2 Survivors 工具箱</h1>
+    <h1>D2 Survivors 安全轉移工具</h1>
     <div class="box">
         <p class="warning">⚠️ 更改遊戲會破壞遊戲樂趣，想清楚再改！</p>
-        <p class="tip">💡 貼心提醒：改錢前需要身上有金幣，並且存檔過一次後才會生效喔！</p>
+        <p class="tip">💡 隱私保證：所有資料皆在您的本機端運算，透過 QR Code 點對點轉移，絕不外洩！</p>
         <br>
 
-        <h3>【步驟一：電腦端 - 安裝書籤】</h3>
-        <p>把下面這兩個黃色按鈕，<span class="tip">按住不放拖曳到你的瀏覽器書籤列</span>：</p>
-        
-        <div style="text-align: center; margin: 15px 0;">
-            <!-- 按鈕 1：改金幣 -->
-            <a class="bookmark-btn" href="javascript:(function(){let rawData=localStorage.getItem('d2-survivors/save/v1');if(!rawData){let saveKey=Object.keys(localStorage).find(k=>localStorage.getItem(k).includes('gold'));if(saveKey){rawData=localStorage.getItem(saveKey);let data=JSON.parse(rawData);data.gold=999999;localStorage.setItem(saveKey,JSON.stringify(data));alert('✨ 金幣修改成功！請按 F5 重新整理！');return;}alert('❌ 找不到遊戲存檔，請確認你正在 https://d2survivors.lol 遊戲頁面中！');return;}let data=JSON.parse(rawData);data.gold=999999;localStorage.setItem('d2-survivors/save/v1',JSON.stringify(data));localStorage.removeItem('d2-survivors/save/v1/unreadable');alert('✨ 成功！金幣已改為 999,999，請按 F5 重新整理！');})();">🔥 D2 Survivors 改金幣</a>
-            
-            <br>
-
-            <!-- 按鈕 2：下載電腦存檔檔案 -->
-            <a class="bookmark-btn" href="javascript:(function(){let rawData=localStorage.getItem('d2-survivors/save/v1');if(!rawData){let saveKey=Object.keys(localStorage).find(k=>localStorage.getItem(k).includes('gold'));if(saveKey)rawData=localStorage.getItem(saveKey);}if(!rawData){alert('❌ 找不到遊戲存檔，請確保你已經進入遊戲並存檔過！');return;}let blob=new Blob([rawData],{type:'application/json'});let url=URL.createObjectURL(blob);let a=document.createElement('a');a.href=url;a.download='d2_save.json';a.click();alert('💾 存檔檔案已下載！請傳送到手機上。');})();">💾 下載電腦存檔檔案</a>
+        <h3>【步驟一：電腦端 - 產生轉移 QR Code】</h3>
+        <p>1. 將下方黃色按鈕<span class="tip">拖曳到書籤列</span>：</p>
+        <div style="text-align: center; margin: 10px 0;">
+            <a class="bookmark-btn" href="javascript:(function(){let rawData=localStorage.getItem('d2-survivors/save/v1');if(!rawData){let saveKey=Object.keys(localStorage).find(k=>localStorage.getItem(k).includes('gold'));if(saveKey)rawData=localStorage.getItem(saveKey);}if(!rawData){alert('❌ 找不到遊戲存檔！');return;}let compressed=btoa(encodeURIComponent(rawData));window.open('https://jtnhrbpvvm-spec.github.io/taiwan_game2/D2%E4%BF%AE%E6%94%B9%E7%89%88/?data='+compressed,'_blank');})();">🔲 生成存檔 QR Code</a>
         </div>
+        <p>2. 在遊戲中點擊該書籤，會自動跳轉並在下方顯示您的專屬 QR Code。</p>
 
         <hr>
 
-        <h3>【步驟二：手機端 - 上傳並還原存檔】</h3>
-        <p>1. 在電腦遊戲畫面點剛拖過去的 **「💾 下載電腦存檔檔案」**，把檔案傳到手機（用 LINE 傳檔案）。</p>
-        <p>2. 用手機打開這個網頁，選擇該檔案並點擊按鈕寫入：</p>
-        <input type="file" id="saveFile" accept=".json">
-        <button class="action-btn" onclick="importSaveFile()">📥 一鍵寫入手機遊戲存檔</button>
-        <p style="font-size: 13px; color: #aaa;">* 寫入成功後，開啟手機上的遊戲網頁按重新整理 (F5) 即可！</p>
+        <h3>【步驟二：手機端 - 掃描接收存檔】</h3>
+        <p>用手機相機掃描電腦畫面上產生的 QR Code，或者將內容貼在下方寫入：</p>
+        
+        <div style="text-align: center;" id="qrcode-container">
+            <div id="qrcode"></div>
+            <p id="qr-tip" style="font-size: 13px; color: #aaa; margin-top: 5px;">（尚未載入存檔資料）</p>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <textarea id="scanResult" placeholder="或將 QR Code 解析出的文字貼在此處..."></textarea>
+            <button class="action-btn" onclick="importFromText()">📥 一鍵寫入手機遊戲存檔</button>
+        </div>
     </div>
 
     <script>
-        function importSaveFile() {
-            let fileInput = document.getElementById('saveFile');
-            if (fileInput.files.length === 0) {
-                alert('❌ 請先選擇下載好的存檔檔案！');
+        // 自動檢查網址列是否有帶入壓縮過的存檔資料
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const encodedData = urlParams.get('data');
+            
+            if (encodedData) {
+                try {
+                    let rawJson = decodeURIComponent(atob(encodedData));
+                    // 驗證 JSON
+                    JSON.parse(rawJson);
+                    
+                    // 顯示在畫面上供手機掃描
+                    document.getElementById('qr-tip').innerText = "請用手機相機掃描下方 QR Code";
+                    new QRCode(document.getElementById("qrcode"), {
+                        text: encodedData,
+                        width: 220,
+                        height: 220
+                    });
+
+                    // 同時填入下方文字框方便複製
+                    document.getElementById('scanResult').value = encodedData;
+                } catch (e) {
+                    alert('❌ 存檔資料解析失敗！');
+                }
+            } else {
+                document.getElementById('qr-tip').innerText = "請先在電腦遊戲中點擊書籤生成 QR Code";
+            }
+        };
+
+        function importFromText() {
+            let inputVal = document.getElementById('scanResult').value.trim();
+            if (!inputVal) {
+                alert('❌ 請先輸入或掃描存檔資料！');
                 return;
             }
 
-            let file = fileInput.files[0];
-            let reader = new FileReader();
-            reader.onload = function(e) {
-                let saveStr = e.target.result;
-                try {
-                    JSON.parse(saveStr);
-                    localStorage.setItem('d2-survivors/save/v1', saveStr);
-                    localStorage.removeItem('d2-survivors/save/v1/unreadable');
-                    alert('✨ 手機存檔寫入成功！\n現在打開手機遊戲網頁並重新整理，就能同步進度囉！');
-                } catch (err) {
-                    alert('❌ 檔案格式不正確，請確認是否為正確的存檔檔案！');
-                }
-            };
-            reader.readAsText(file);
+            try {
+                // 解碼 Base64 與 URI
+                let rawJson = decodeURIComponent(atob(inputVal));
+                JSON.parse(rawJson); // 驗證合法性
+
+                localStorage.setItem('d2-survivors/save/v1', rawJson);
+                localStorage.removeItem('d2-survivors/save/v1/unreadable');
+                alert('✨ 手機存檔寫入成功！\n請打開手機遊戲網頁重新整理 (F5) 即可！');
+            } catch (e) {
+                alert('❌ 格式錯誤，無法還原存檔！');
+            }
         }
     </script>
 </body>
