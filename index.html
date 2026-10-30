@@ -42,7 +42,7 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
         .action-btn:hover { background-color: #00b359; }
-        textarea { width: 100%; height: 70px; background: #2a2a2a; color: #fff; border: 1px solid #444; border-radius: 5px; padding: 8px; box-sizing: border-box; }
+        input[type="file"] { background: #2a2a2a; color: #fff; padding: 8px; border-radius: 5px; width: 100%; box-sizing: border-box; margin: 10px 0; }
         hr { border: 0; border-top: 1px solid #333; margin: 20px 0; }
     </style>
 </head>
@@ -62,36 +62,42 @@
             
             <br>
 
-            <!-- 按鈕 2：一鍵複製電腦存檔 -->
-            <a class="bookmark-btn" href="javascript:(function(){let rawData=localStorage.getItem('d2-survivors/save/v1');if(!rawData){let saveKey=Object.keys(localStorage).find(k=>localStorage.getItem(k).includes('gold'));if(saveKey)rawData=localStorage.getItem(saveKey);}if(!rawData){alert('❌ 找不到遊戲存檔，請確保你已經進入遊戲並存檔過！');return;}navigator.clipboard.writeText(rawData).then(()=>{alert('📋 電腦存檔已成功複製到剪貼簿！\n請貼到 LINE 傳給手機！');}).catch(()=>{prompt('請手動複製以下存檔碼：',rawData);});})();">📋 一鍵複製電腦存檔</a>
+            <!-- 按鈕 2：下載電腦存檔檔案 -->
+            <a class="bookmark-btn" href="javascript:(function(){let rawData=localStorage.getItem('d2-survivors/save/v1');if(!rawData){let saveKey=Object.keys(localStorage).find(k=>localStorage.getItem(k).includes('gold'));if(saveKey)rawData=localStorage.getItem(saveKey);}if(!rawData){alert('❌ 找不到遊戲存檔，請確保你已經進入遊戲並存檔過！');return;}let blob=new Blob([rawData],{type:'application/json'});let url=URL.createObjectURL(blob);let a=document.createElement('a');a.href=url;a.download='d2_save.json';a.click();alert('💾 存檔檔案已下載！請傳送到手機上。');})();">💾 下載電腦存檔檔案</a>
         </div>
 
         <hr>
 
-        <h3>【步驟二：手機端 - 貼上並匯入存檔】</h3>
-        <p>1. 在電腦遊戲畫面點剛拖過去的 **「📋 一鍵複製電腦存檔」** 書籤，貼到 LINE 傳給手機。</p>
-        <p>2. 用手機打開這個網頁，把存檔碼貼在下方框框，點擊綠色按鈕寫入：</p>
-        <textarea id="saveInput" placeholder="請將電腦複製的存檔碼貼在這裡..."></textarea>
-        <button class="action-btn" onclick="importSave()">📥 一鍵寫入手機遊戲存檔</button>
+        <h3>【步驟二：手機端 - 上傳並還原存檔】</h3>
+        <p>1. 在電腦遊戲畫面點剛拖過去的 **「💾 下載電腦存檔檔案」**，把檔案傳到手機（用 LINE 傳檔案）。</p>
+        <p>2. 用手機打開這個網頁，選擇該檔案並點擊按鈕寫入：</p>
+        <input type="file" id="saveFile" accept=".json">
+        <button class="action-btn" onclick="importSaveFile()">📥 一鍵寫入手機遊戲存檔</button>
         <p style="font-size: 13px; color: #aaa;">* 寫入成功後，開啟手機上的遊戲網頁按重新整理 (F5) 即可！</p>
     </div>
 
     <script>
-        function importSave() {
-            let saveStr = document.getElementById('saveInput').value.trim();
-            if (!saveStr) {
-                alert('❌ 請先將存檔碼貼在上方框框中！');
+        function importSaveFile() {
+            let fileInput = document.getElementById('saveFile');
+            if (fileInput.files.length === 0) {
+                alert('❌ 請先選擇下載好的存檔檔案！');
                 return;
             }
 
-            try {
-                JSON.parse(saveStr);
-                localStorage.setItem('d2-survivors/save/v1', saveStr);
-                localStorage.removeItem('d2-survivors/save/v1/unreadable');
-                alert('✨ 手機存檔寫入成功！\n現在打開手機遊戲網頁並重新整理，就能同步進度囉！');
-            } catch (e) {
-                alert('❌ 存檔格式不正確，請確認複製的內容是否完整！');
-            }
+            let file = fileInput.files[0];
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                let saveStr = e.target.result;
+                try {
+                    JSON.parse(saveStr);
+                    localStorage.setItem('d2-survivors/save/v1', saveStr);
+                    localStorage.removeItem('d2-survivors/save/v1/unreadable');
+                    alert('✨ 手機存檔寫入成功！\n現在打開手機遊戲網頁並重新整理，就能同步進度囉！');
+                } catch (err) {
+                    alert('❌ 檔案格式不正確，請確認是否為正確的存檔檔案！');
+                }
+            };
+            reader.readAsText(file);
         }
     </script>
 </body>
