@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>D2 Survivors 跨裝置存檔轉移工具</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 40px; background-color: #121212; color: #fff; }
+        .box { background: #1e1e1e; padding: 30px; border-radius: 10px; display: inline-block; max-width: 600px; text-align: left; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .btn { 
+            padding: 15px 25px; 
+            font-size: 16px; 
+            background-color: #ffcc00; 
+            color: #000; 
+            border: none; 
+            cursor: pointer; 
+            font-weight: bold; 
+            border-radius: 5px; 
+            display: block; 
+            width: 100%;
+            margin: 15px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .btn:hover { background-color: #e6b800; }
+        .btn-green { background-color: #00cc66; color: #fff; }
+        .btn-green:hover { background-color: #00b359; }
+        .tip { color: #ffcc00; font-size: 14px; line-height: 1.6; }
+        textarea { width: 100%; height: 80px; background: #2a2a2a; color: #fff; border: 1px solid #444; border-radius: 5px; padding: 10px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🎮 D2 Survivors 跨裝置存檔轉移</h1>
+    <div class="box">
+        <p><b>【步驟一：在電腦上執行】</b></p>
+        <p class="tip">請先打開電腦版遊戲，然後點擊下方按鈕，把電腦存檔複製起來，透過 LINE 或筆記傳到手機。</p>
+        <button class="btn" onclick="exportSave()">📋 一鍵複製電腦存檔</button>
+
+        <hr style="border: 0; border-top: 1px solid #444; margin: 25px 0;">
+
+        <p><b>【步驟二：在手機上執行】</b></p>
+        <p class="tip">用手機打開遊戲網頁並確保有過存檔後，將複製的存檔貼在下方框框，點擊還原即可！</p>
+        <textarea id="saveInput" placeholder="請把存檔字串貼在這裡..."></textarea>
+        <button class="btn btn-green" onclick="importSave()">📥 一鍵寫入手機遊戲存檔</button>
+    </div>
+
+    <script>
+        // 步驟一：匯出電腦存檔
+        function exportSave() {
+            let rawData = localStorage.getItem('d2-survivors/save/v1');
+            if (!rawData) {
+                let saveKey = Object.keys(localStorage).find(k => localStorage.getItem(k).includes('gold'));
+                if (saveKey) rawData = localStorage.getItem(saveKey);
+            }
+            
+            if (!rawData) {
+                alert('❌ 找不到電腦遊戲存檔，請確認你正在遊戲頁面或已玩過遊戲！');
+                return;
+            }
+
+            navigator.clipboard.writeText(rawData).then(() => {
+                alert('✅ 電腦存檔已成功複製到剪貼簿！\n請直接貼到手機（例如用 LINE 傳給自己）。');
+            }).catch(err => {
+                // 備用方案：如果剪貼簿 API 被瀏覽器阻擋
+                prompt("請複製以下存檔字串：", rawData);
+            });
+        }
+
+        // 步驟二：匯入手機存檔
+        function importSave() {
+            let saveStr = document.getElementById('saveInput').value.trim();
+            if (!saveStr) {
+                alert('❌ 請先將存檔字串貼到上面的框框中！');
+                return;
+            }
+
+            try {
+                // 簡單驗證是否為 JSON
+                JSON.parse(saveStr);
+                localStorage.setItem('d2-survivors/save/v1', saveStr);
+                localStorage.removeItem('d2-survivors/save/v1/unreadable');
+                alert('✨ 手機存檔還原成功！\n請重新整理遊戲網頁 (F5) 即可同步完成！');
+            } catch (e) {
+                alert('❌ 存檔格式錯誤，請確認貼上的內容是否完整！');
+            }
+        }
+    </script>
+</body>
+</html>
